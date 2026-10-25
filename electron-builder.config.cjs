@@ -1,0 +1,144 @@
+// electron-builder config: `npm run dist:mac` -> out/release/Crease-<version>-arm64.dmg (+ -mac.zip for updates).
+//
+// Signing / notarization are driven by environment variables, so the same config makes unsigned dev builds
+// and signed releases (see README "Signing and notarization"):
+//   CSC_LINK + CSC_KEY_PASSWORD (a .p12 "Developer ID Application" cert) or CSC_NAME (a Keychain identity, written
+//     WITHOUT the "Developer ID Application: " prefix, e.g. "Jane Doe (AB12CD34EF)"; electron-builder rejects the
+//     prefix) -> signed with the hardened runtime. Without them the app is ad-hoc signed (runs locally; Gatekeeper
+//     warns on other Macs: right-click > Open).
+//   Notarized and stapled (only when also signed) with any one of (electron-builder checks them in this order):
+//     APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID;
+//     APPLE_API_KEY (path to the .p8) + APPLE_API_KEY_ID + APPLE_API_ISSUER;
+//     APPLE_KEYCHAIN_PROFILE (a `xcrun notarytool store-credentials` profile; optional APPLE_KEYCHAIN = the
+//       keychain file holding it, default: the login keychain). Supported by the installed electron-builder 26.15
+//       (MacTargetHelper.getNotarizeOptions) and @electron/notarize 2.5 (--keychain-profile).
+//   PRINTSTUDIO_MAC_ARCH=x64|universal -> Intel / universal build (untested; sharp/better-sqlite3 need x64 prebuilds).
+//
+// The Claude Code CLI is NOT bundled (docs/licenses/INVENTORY.md B2): the Agent SDK's platform package
+// (@anthropic-ai/claude-agent-sdk-<platform>, a ~235 MB proprietary binary) is excluded below, and the app runs the
+// user's own Claude Code instead (server/tools/discovery.ts). The SDK's JavaScript library still ships.
+const signed = !!(process.env.CSC_LINK || process.env.CSC_NAME)
+const notarize =
+  signed &&
+  !!(
+    (process.env.APPLE_API_KEY && process.env.APPLE_API_KEY_ID && process.env.APPLE_API_ISSUER) ||
+    (process.env.APPLE_ID && process.env.APPLE_APP_SPECIFIC_PASSWORD && process.env.APPLE_TEAM_ID) ||
+    process.env.APPLE_KEYCHAIN_PROFILE
+  )
+const arch = process.env.PRINTSTUDIO_MAC_ARCH || "arm64"
+
+// Bundle id, registered with Apple (Developer ID + App Store Connect). It must never change:
+// macOS keys Local Network / privacy permissions and Squirrel.Mac auto-update to it. (Earlier unsigned builds used
+// "dev.printstudio.app"; none were distributed.) Not the userData folder or the Keychain item: those follow
+// Electron's app.name, which stays "printstudio" (electron/identity.test.ts).
+const APP_ID = process.env.CREASE_APP_ID || "ventures.plausible.crease"
+
+// Dependencies only the renderer uses (bundled by Vite into dist/) plus the shadcn CLI's toolchain. The server's
+// runtime imports are the externals of dist-electron/main.mjs (fastify, the Agent SDK, better-sqlite3, sharp,
+// manifold-3d, simple-git, chokidar, zod, electron-updater) and @fontsource (assembly-guide fonts).
+const RENDERER_ONLY = [
+  "monaco-editor",
+  "@monaco-editor",
+  "@phosphor-icons",
+  "lucide-react",
+  "@base-ui",
+  "three",
+  "three-stdlib",
+  "@react-three",
+  "stats-gl",
+  "hls.js",
+  "@mediapipe",
+  "@dimforge",
+  "react",
+  "react-dom",
+  "react-resizable-panels",
+  "shadcn",
+  "ts-morph",
+  "@ts-morph",
+  "@babel",
+  "@dotenvx",
+  "tailwindcss",
+  "@tailwindcss",
+  "lightningcss",
+  "lightningcss-*",
+  "tw-animate-css",
+  "sonner",
+  "next-themes",
+  "zustand",
+]
+
+/** @type {import("electron-builder").Configuration} */
+module.exports = {
+  appId: APP_ID,
+  // The .app, Dock and menu bar name. Electron's app.name is unaffected (it reads package.json, which has no
+  // productName), so the userData folder and the "printstudio Safe Storage" Keychain item stay the same.
+  productName: "Crease",
+  copyright: "Copyright © 2026 Aniruddh Chandratre. Licensed under the Apache License 2.0.",
+  directories: { output: "out/release", buildResources: "build" },
+  // No asar: the server spawns external programs and loads native modules / data files by path;
+  // a plain folder keeps every path real (no asar.unpacked rewriting).
+  asar: false,
+  // better-sqlite3 and sharp ship N-API prebuilds that load in Electron as-is: never rebuild (and never touch
+  // node_modules during packaging).
+  npmRebuild: false,
+  nodeGypRebuild: false,
+  files: [
+    "package.json",
+    "dist/**",
+    "dist-electron/**",
+    "resources/**",
+    "!**/*.map",
+    "!resources/**/fixtures/**",
+    // Renderer-only packages: Vite already bundled them into dist/, the server never loads them.
+    ...RENDERER_ONLY.map((p) => `!node_modules/${p}{,/**}`),
+    // The SDK's bundled `claude` binary: proprietary, not ours to redistribute in an open-source build (B2).
+    "!node_modules/@anthropic-ai/claude-agent-sdk-*{,/**}",
+    // better-sqlite3: keep only this platform's prebuild, not the C sources.
+    "!node_modules/better-sqlite3/{deps,src}{,/**}",
+  ],
+  // Licence notices (R21, docs/licenses/INVENTORY.md): ours (generated by `npm run notices`, also shown in
+  // Settings > About > Licences) and Electron's own LICENSE + Chromium credits, which the mac target doesn't copy.
+  extraResources: [
+    { from: "LICENSE", to: "LICENSE.txt" }, // Crease's own licence (Apache-2.0) + NOTICE (§4(d))
+    { from: "NOTICE", to: "NOTICE.txt" },
+    { from: "THIRD_PARTY_NOTICES.txt", to: "THIRD_PARTY_NOTICES.txt" },
+    { from: "node_modules/electron/dist/LICENSE", to: "LICENSE.electron.txt" },
+    { from: "node_modules/electron/dist/LICENSES.chromium.html", to: "LICENSES.chromium.html" },
+  ],
+  extraMetadata: { main: "dist-electron/main.mjs" },
+  mac: {
+    target: [
+      { target: "dmg", arch: [arch] },
+      // The .zip is what electron-updater downloads on macOS.
+      { target: "zip", arch: [arch] },
+    ],
+    category: "public.app-category.graphics-design",
+    icon: "build/icon.png",
+    // "-" = ad-hoc (Apple silicon refuses to run unsigned code); null lets electron-builder find CSC_* identity.
+    identity: signed ? undefined : "-",
+    hardenedRuntime: signed,
+    gatekeeperAssess: false,
+    entitlements: "build/entitlements.mac.plist",
+    entitlementsInherit: "build/entitlements.mac.plist",
+    notarize,
+    minimumSystemVersion: "12.0",
+    artifactName: "Crease-${version}-${arch}-mac.${ext}", // the .zip (the .dmg names itself below)
+    extendInfo: {
+      NSHumanReadableCopyright: "Describe it. Print it. Put it together.",
+      // macOS 15+ asks before an app talks to the local network (the printer). This is the reason it shows.
+      NSLocalNetworkUsageDescription: "Crease talks to your 3D printer on your local network.",
+    },
+  },
+  dmg: {
+    title: "Crease ${version}",
+    artifactName: "Crease-${version}-${arch}.${ext}",
+    contents: [
+      { x: 140, y: 190, type: "file" },
+      { x: 400, y: 190, type: "link", path: "/Applications" },
+    ],
+    window: { width: 540, height: 380 },
+  },
+  // Auto-update feed: none yet. Releases set PRINTSTUDIO_UPDATE_URL at runtime (electron/updater.ts) or add a
+  // `publish` provider here (e.g. { provider: "github", owner, repo }) when distribution is decided.
+  publish: null,
+}

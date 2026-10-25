@@ -1,0 +1,71 @@
+[
+  {
+    "name": "i7-cold-start",
+    "description": "SPARKX i7, cold printer: START_PRINT heats, loads the CFS slot, flushes, cleans; then layer 1.",
+    "source": "observed (findings.md: print_stats frozen at standby, virtual_sdcard.is_active + layer 0 while preparing, layer 12/100 and 27/100 later)",
+    "job": { "filename": "calibration-cube_main.gcode", "firstLayerByte": 1237, "startedAt": 0 },
+    "steps": [
+      { "t": 1000, "status": { "print_stats": { "state": "standby", "filename": "" }, "virtual_sdcard": { "is_active": false, "progress": 0, "file_position": 0, "file_size": 0, "layer": 0, "layer_count": 0, "file_path": null }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false, "sd_paused": false } }, "expect": "preparing", "why": "grace" },
+      { "t": 4000, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.0018, "file_position": 689, "file_size": 373719, "layer": 0, "layer_count": 100, "file_path": "/mnt/UDISK/printer_data/gcodes/calibration-cube_main.gcode" }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "preparing", "why": "file_position" },
+      { "t": 90000, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.003, "file_position": 1130, "file_size": 373719, "layer": 0, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "preparing", "why": "file_position" },
+      { "t": 120000, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.012, "file_position": 4480, "file_size": 373719, "layer": 1, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "printing", "layer": 1 },
+      { "t": 300000, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.26, "file_position": 97167, "file_size": 373719, "layer": 27, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "ws": { "deviceState": 1, "layer": 27, "TotalLayer": 100 }, "expect": "printing", "layer": 27 }
+    ]
+  },
+  {
+    "name": "i7-warm-start-stale-layer",
+    "description": "SPARKX i7, warm printer right after a finished job: START_PRINT skips heating; the previous job's layer (100/100) is still reported until the new job's first layer change.",
+    "source": "after-finish values observed (findings.md: is_active false, progress 1.02, file_path null, filename kept); the leftover layer while the next job prepares is the hypothesis for the missing Preparing phase (plan.md bug, test plate 2026-10-08)",
+    "job": { "filename": "apple-logo-3_plate-de.gcode", "firstLayerByte": 1237, "startedAt": 0 },
+    "steps": [
+      { "t": -60000, "status": { "print_stats": { "state": "standby", "filename": "apple-logo-3_plate.gcode" }, "virtual_sdcard": { "is_active": false, "progress": 1.0219, "file_position": 381903, "file_size": 373719, "layer": 100, "layer_count": 100, "file_path": null }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false } }, "ws": { "deviceState": 1, "layer": 100, "TotalLayer": 100 }, "expect": "standby", "noJob": true },
+      { "t": 3000, "status": { "print_stats": { "state": "standby", "filename": "apple-logo-3_plate-de.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.0019, "file_position": 689, "file_size": 373719, "layer": 100, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "ws": { "deviceState": 1, "layer": 100, "TotalLayer": 100 }, "expect": "preparing", "why": "file_position" },
+      { "t": 50000, "status": { "print_stats": { "state": "standby", "filename": "apple-logo-3_plate-de.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.0019, "file_position": 689, "file_size": 373719, "layer": 100, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "preparing", "why": "file_position" },
+      { "t": 70000, "status": { "print_stats": { "state": "standby", "filename": "apple-logo-3_plate-de.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.01, "file_position": 3900, "file_size": 373719, "layer": 1, "layer_count": 60 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "printing", "layer": 1 }
+    ]
+  },
+  {
+    "name": "i7-warm-start-unknown-file",
+    "description": "Same warm start, but Crease doesn't know the file layout (started from the touchscreen, or after an app restart): the leftover layer must not count as this job's layer.",
+    "source": "as i7-warm-start-stale-layer; no job of ours",
+    "job": null,
+    "steps": [
+      { "t": 0, "status": { "print_stats": { "state": "standby", "filename": "apple-logo-3_plate.gcode" }, "virtual_sdcard": { "is_active": false, "progress": 1.0219, "layer": 100, "layer_count": 100, "file_path": null }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false } }, "expect": "standby" },
+      { "t": 2000, "status": { "print_stats": { "state": "standby", "filename": "other.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.002, "layer": 100, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "preparing", "why": "stale-layer" },
+      { "t": 40000, "status": { "print_stats": { "state": "standby", "filename": "other.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.002, "layer": 100, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "preparing", "why": "stale-layer" },
+      { "t": 60000, "status": { "print_stats": { "state": "standby", "filename": "other.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.01, "layer": 1, "layer_count": 110 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "printing", "layer": 1 },
+      { "t": 900000, "status": { "print_stats": { "state": "standby", "filename": "other.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.9, "layer": 100, "layer_count": 110 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "printing", "layer": 100 }
+    ]
+  },
+  {
+    "name": "i7-app-restart-mid-print",
+    "description": "Crease (re)starts while the i7 is mid-print: the first poll is already active at layer 27, which is real.",
+    "source": "observed values (findings.md live check: layer 27/100, progress 0.26)",
+    "job": null,
+    "steps": [
+      { "t": 0, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.26, "layer": 27, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false, "sd_paused": true } }, "expect": "printing", "layer": 27 },
+      { "t": 2000, "status": { "print_stats": { "state": "standby", "filename": "calibration-cube_main.gcode" }, "virtual_sdcard": { "is_active": true, "progress": 0.26, "layer": 27, "layer_count": 100 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": true, "sd_paused": true } }, "expect": "paused" }
+    ]
+  },
+  {
+    "name": "i7-cancel-at-start",
+    "description": "Firmware cancels at 0 s (unset CFS slot): the printer never shows the file running; after the grace period it's idle.",
+    "source": "observed (findings.md 'Early cancel': print_stats back to standby with an empty filename)",
+    "job": { "filename": "calibration-cube_main.gcode", "firstLayerByte": 1237, "startedAt": 0 },
+    "steps": [
+      { "t": 1000, "status": { "print_stats": { "state": "standby", "filename": "" }, "virtual_sdcard": { "is_active": false, "progress": 0, "layer": 0 }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false } }, "expect": "preparing", "why": "grace" },
+      { "t": 46000, "status": { "print_stats": { "state": "standby", "filename": "" }, "virtual_sdcard": { "is_active": false, "progress": 0, "layer": 0 }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false } }, "expect": "standby" }
+    ]
+  },
+  {
+    "name": "klipper-print-start",
+    "description": "Plain Klipper (practice printer / Voron-style): print_stats says printing from the first line; PRINT_START heating before the first layer is Preparing for our own job.",
+    "source": "Klipper/Moonraker documented behaviour; simulator",
+    "job": { "filename": "box_main.gcode", "firstLayerByte": 1237, "startedAt": 0 },
+    "steps": [
+      { "t": 2000, "status": { "print_stats": { "state": "printing", "filename": "box_main.gcode", "info": { "current_layer": 0, "total_layer": 50 } }, "virtual_sdcard": { "is_active": true, "progress": 0.0018, "file_position": 689, "file_path": "/home/pi/printer_data/gcodes/box_main.gcode" }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false } }, "expect": "preparing", "why": "file_position" },
+      { "t": 200000, "status": { "print_stats": { "state": "printing", "filename": "box_main.gcode", "info": { "current_layer": 3, "total_layer": 50 } }, "virtual_sdcard": { "is_active": true, "progress": 0.05, "file_position": 18000 }, "idle_timeout": { "state": "Printing" }, "pause_resume": { "is_paused": false } }, "expect": "printing", "layer": 3 },
+      { "t": 900000, "status": { "print_stats": { "state": "complete", "filename": "box_main.gcode" }, "virtual_sdcard": { "is_active": false, "progress": 1 }, "idle_timeout": { "state": "Ready" }, "pause_resume": { "is_paused": false } }, "expect": "complete" }
+    ]
+  }
+]

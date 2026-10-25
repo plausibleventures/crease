@@ -1,0 +1,24 @@
+{
+  "name": "Fit test",
+  "tags": [
+    "calibration"
+  ],
+  "parts": [
+    {
+      "id": "coupon",
+      "file": "parts/coupon.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    },
+    {
+      "id": "peg",
+      "file": "parts/peg.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    }
+  ]
+}

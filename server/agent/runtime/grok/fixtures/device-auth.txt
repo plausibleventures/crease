@@ -1,0 +1,12 @@
+
+To sign in, open this URL in your browser:
+
+  https://accounts.x.ai/oauth2/device?user_code=7QXK-4TB2
+
+Confirm this code in your browser:
+
+  7QXK-4TB2
+
+[90mOnly continue with a code you requested. Don't share it with anyone.[0m
+
+Waiting for authorization...

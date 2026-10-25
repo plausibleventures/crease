@@ -1,0 +1,17 @@
+{
+  "name": "Wall hook",
+  "tags": [
+    "home",
+    "wall"
+  ],
+  "parts": [
+    {
+      "id": "hook",
+      "file": "parts/hook.scad",
+      "qty": 1,
+      "colors": [
+        "black"
+      ]
+    }
+  ]
+}

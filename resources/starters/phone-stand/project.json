@@ -1,0 +1,17 @@
+{
+  "name": "Phone stand",
+  "tags": [
+    "desk",
+    "phone"
+  ],
+  "parts": [
+    {
+      "id": "stand",
+      "file": "parts/stand.scad",
+      "qty": 1,
+      "colors": [
+        "black"
+      ]
+    }
+  ]
+}

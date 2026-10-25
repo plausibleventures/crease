@@ -1,0 +1,17 @@
+{
+  "name": "Desk organiser",
+  "tags": [
+    "desk",
+    "storage"
+  ],
+  "parts": [
+    {
+      "id": "organiser",
+      "file": "parts/organiser.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    }
+  ]
+}

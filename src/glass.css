@@ -1,0 +1,254 @@
+/*
+ * Glass: the control layer that floats over the full-bleed stage (tokens --glass-* in src/index.css).
+ *
+ * Rules (from Apple's Liquid Glass guidance, kept restrained):
+ *  - glass is only for controls that float over the stage: the project header pill, the view switcher, chips and
+ *    toolbars over the 3D view, page bars, toasts. Content is never glass: the parts list, chat, tools and the overview
+ *    sheet are solid panels (.ps-glass-panel), so reading never happens through a blur;
+ *  - at most two layers: menus and dialogs over glass are denser, not another clear pane;
+ *  - grouped controls share one capsule with one selection pill that slides between choices;
+ *  - no tint: the glass is stone; colour comes from the user's filament (a faint light in the stage behind);
+ *  - legibility first: every fill + backdrop dimming keeps muted text >= 4.5:1 even over a pure white or black part
+ *    behind it (dark: header pill 4.9, chips 4.6, panels are solid);
+ *  - Reduce Transparency -> solid surfaces, Increase Contrast -> solid fill and a stronger edge, Reduce Motion -> no
+ *    travel (the slide and the dialog focus-in go instant).
+ */
+
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-press: 140ms;
+  --glass-move: 500ms;
+  --glass-spring: cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-radius: 24px;
+}
+
+@layer components {
+  /* ---------- the material ---------- */
+  .ps-glass,
+  [data-glass-chrome] {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--glass-fill);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    border: 1px solid var(--glass-edge);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+    /* the chrome's own strips go clear: the glass is the surface */
+    --sidebar: transparent;
+    --surface-1: transparent;
+    --muted-foreground: var(--glass-muted);
+    --faint: var(--glass-faint);
+  }
+  /* small grouped controls: a capsule */
+  .ps-glass-pill {
+    border-radius: 9999px;
+    background-color: var(--glass-fill-ctl);
+    -webkit-backdrop-filter: var(--glass-filter-ctl);
+    backdrop-filter: var(--glass-filter-ctl);
+  }
+  /* the one selection pill that slides between choices; the picked tab reads dark on it */
+  .ps-glass-thumb {
+    border-radius: 9999px;
+    background: var(--glass-thumb);
+    transition:
+      transform var(--glass-move) var(--glass-spring),
+      width var(--glass-move) var(--glass-spring);
+  }
+  .ps-glass-pill [role="tab"][aria-selected="true"] {
+    color: var(--glass-thumb-ink) !important;
+    transition: color var(--glass-move) var(--glass-spring);
+  }
+  /* toolbar groups and chips over the 3D view (anything the viewers float with a backdrop blur) */
+  .ps-glass-ctl,
+  [data-viewer] .backdrop-blur {
+    border-color: var(--glass-edge);
+    background-color: var(--glass-fill-ctl);
+    -webkit-backdrop-filter: var(--glass-filter-ctl);
+    backdrop-filter: var(--glass-filter-ctl);
+    box-shadow: var(--glass-shadow);
+    --muted-foreground: var(--glass-muted);
+  }
+  .ps-glass-ctl,
+  .ps-glass-ctl button {
+    border-radius: 9999px;
+  }
+  [data-viewer] .backdrop-blur {
+    border-radius: 16px;
+  }
+
+  /* solid panels for reading (parts list, chat, tools): content, not glass */
+  .ps-glass-panel {
+    background-color: var(--glass-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--line);
+  }
+  /* the project header: a centred pill that only grows as wide as what it holds */
+  .ps-glass-bar,
+  [data-glass-chrome="top"] {
+    left: 50% !important;
+    right: auto !important;
+    width: max-content;
+    max-width: calc(100% - 16px);
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    padding-inline: 10px 14px;
+  }
+  .ps-glass-bar {
+    gap: 10px;
+  }
+
+  /* the content sheet (overview, compare) sits in the gap as a solid surface: content is never glass */
+  .ps-glass-sheet {
+    border-radius: var(--glass-radius);
+    background: var(--background);
+    border: 1px solid var(--line);
+    box-shadow: 0 18px 48px -20px rgb(0 0 0 / 0.6);
+  }
+
+  /* the stage spans the window under the chrome, lit faintly by the project's filament (--filament) */
+  .ps-bleed {
+    background-color: var(--stage);
+    background-image:
+      radial-gradient(ellipse 75% 70% at 50% 45%, color-mix(in oklab, var(--filament, transparent) var(--filament-mix), transparent), transparent 85%),
+      radial-gradient(ellipse 55% 60% at 50% 38%, var(--stage-top), transparent 75%);
+  }
+  .ps-bleed .ps-stage {
+    background: transparent;
+  }
+  .ps-bleed [data-stage] [data-viewer] > div:first-child {
+    position: absolute !important;
+    width: auto !important;
+    height: auto !important;
+    left: calc(-1 * var(--bl, 0px));
+    right: calc(-1 * var(--br, 0px));
+    top: calc(-1 * var(--bt, 0px));
+    bottom: calc(-1 * var(--bb, 0px));
+  }
+
+  /* pages (Library, Machines, Designers): the bar floats over the scrolling page */
+  [data-glass-chrome="top"] {
+    position: absolute;
+    top: 8px;
+    z-index: 30;
+    height: 44px;
+    gap: 16px;
+  }
+  [data-glass-chrome="top"] + * {
+    padding-top: 52px;
+    padding-bottom: 32px;
+  }
+  /* the status line: a thin glass strip along the bottom edge, over the stage */
+  [data-glass-chrome="status"] {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 40;
+    border-radius: 0;
+    border-width: 1px 0 0;
+    box-shadow: none;
+  }
+
+  /* dialogs, menus, toasts: the second layer, denser so nothing reads through twice */
+  [data-slot="dialog-content"],
+  .cn-toast,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="select-content"] {
+    background-color: color-mix(in oklab, var(--popover) 86%, transparent) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(1.6);
+    backdrop-filter: blur(30px) saturate(1.6);
+    border-color: var(--glass-edge) !important;
+    border-radius: calc(var(--glass-radius) - 8px) !important;
+  }
+  [data-slot="dialog-content"] {
+    border-radius: var(--glass-radius) !important;
+    box-shadow: var(--glass-shadow), 0 40px 100px -20px rgb(0 0 0 / 0.6) !important;
+  }
+  [data-slot="dialog-overlay"] {
+    -webkit-backdrop-filter: blur(6px) saturate(0.9);
+    backdrop-filter: blur(6px) saturate(0.9);
+  }
+  /* glass arrives by focusing into place, not by sliding */
+  [data-slot="dialog-content"][data-open] {
+    animation: glass-in var(--glass-move) var(--glass-spring) both;
+  }
+  /* inside chrome, a pressed control gives under the hand */
+  [data-glass-chrome] button:active,
+  .ps-glass button:active {
+    transform: scale(0.97);
+    transition: transform var(--t-press) var(--ease-out);
+  }
+}
+
+@keyframes glass-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    filter: blur(0);
+  }
+}
+
+/* ---------- accessibility fallbacks ---------- */
+/* Reduce Transparency: every glass surface goes solid (no blur, no see-through), the stage light stays */
+@media (prefers-reduced-transparency: reduce) {
+  .ps-glass,
+  [data-glass-chrome],
+  .ps-glass-pill,
+  .ps-glass-ctl,
+  [data-viewer] .backdrop-blur,
+  [data-slot="dialog-content"],
+  .cn-toast,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="select-content"] {
+    background-color: var(--surface-2) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .ps-glass-panel {
+    background-color: var(--glass-panel) !important;
+  }
+  [data-slot="dialog-overlay"] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* Increase Contrast: solid fills, full-strength text and a visible edge on everything that floats */
+@media (prefers-contrast: more) {
+  .ps-glass,
+  [data-glass-chrome],
+  .ps-glass-pill,
+  .ps-glass-ctl,
+  [data-viewer] .backdrop-blur,
+  [data-slot="dialog-content"],
+  .cn-toast,
+  [data-slot="dropdown-menu-content"],
+  [data-slot="select-content"] {
+    background-color: var(--surface-2) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-color: var(--line-strong) !important;
+    --muted-foreground: var(--foreground);
+  }
+  :root {
+    --line: var(--line-strong);
+    --border: var(--line-strong);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --glass-spring: linear;
+    --glass-move: 1ms;
+  }
+  [data-slot="dialog-content"][data-open] {
+    animation: none;
+  }
+  [data-glass-chrome] button:active,
+  .ps-glass button:active {
+    transform: none;
+  }
+}

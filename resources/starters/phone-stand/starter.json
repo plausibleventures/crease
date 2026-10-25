@@ -1,0 +1,12 @@
+{
+  "id": "phone-stand",
+  "title": "Phone stand",
+  "blurb": "Holds your phone at a comfy angle, with a slot for the charging cable.",
+  "tags": [
+    "desk",
+    "phone"
+  ],
+  "primaryPart": "stand",
+  "order": 1,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

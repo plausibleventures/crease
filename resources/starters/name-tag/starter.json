@@ -1,0 +1,12 @@
+{
+  "id": "name-tag",
+  "title": "Name tag",
+  "blurb": "A tag with your name in raised letters and a hole for a key ring.",
+  "tags": [
+    "gift",
+    "text"
+  ],
+  "primaryPart": "tag",
+  "order": 6,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

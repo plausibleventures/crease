@@ -1,0 +1,25 @@
+{
+  "name": "Box with a hinged lid",
+  "tags": [
+    "storage",
+    "moving parts"
+  ],
+  "parts": [
+    {
+      "id": "base",
+      "file": "parts/base.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    },
+    {
+      "id": "lid",
+      "file": "parts/lid.scad",
+      "qty": 1,
+      "colors": [
+        "blue"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Plant pot with saucer",
+  "tags": [
+    "home",
+    "garden"
+  ],
+  "parts": [
+    {
+      "id": "pot",
+      "file": "parts/pot.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    },
+    {
+      "id": "saucer",
+      "file": "parts/saucer.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    }
+  ]
+}

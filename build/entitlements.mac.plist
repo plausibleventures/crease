@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Hardened-runtime entitlements (required for notarization). Used for the app and its Electron helpers
+     (entitlementsInherit). Entitlements apply per signed binary: the tools Crease spawns (OpenSCAD, OrcaSlicer,
+     Blender, claude, codex, grok) run under their own signatures and need nothing here. Not sandboxed (no
+     com.apple.security.app-sandbox): the app spawns those tools and reads ~/PrintStudio or ~/Crease freely.
+       allow-jit: V8's JIT (Electron's documented minimum).
+       allow-unsigned-executable-memory: V8/WebAssembly (manifold-3d) writable+executable pages; Electron's and
+         electron-builder's default set. A candidate to drop once a signed build is tested without it.
+       disable-library-validation: native modules (better-sqlite3, sharp's libvips) and their dylibs are loaded by
+         path from node_modules (asar: false). electron-builder re-signs them with our identity, but this keeps a
+         third-party prebuild signed by someone else from failing to load.
+       network.client / network.server: App Sandbox keys, inert without the sandbox; kept so a future sandboxed
+         build keeps printer access and the local API server. The local server on 127.0.0.1 and the printer
+         connection need no entitlement under the hardened runtime. -->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+  </dict>
+</plist>

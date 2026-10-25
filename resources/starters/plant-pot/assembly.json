@@ -1,0 +1,21 @@
+{
+  "title": "Plant pot with saucer",
+  "summary": "A tapered pot with drainage holes that sits in a matching saucer.",
+  "timeMinutes": 1,
+  "parts": [
+    { "id": "saucer", "qty": 1, "color": "white", "name": "Saucer" },
+    { "id": "pot", "qty": 1, "color": "white", "name": "Pot" }
+  ],
+  "hardware": [],
+  "tools": [],
+  "consumables": [],
+  "placements": [
+    { "part": "saucer", "translate": [0, 0, 0] },
+    { "part": "pot", "translate": [0, 0, 1.6] }
+  ],
+  "motions": [],
+  "steps": [
+    { "n": 1, "title": "Set the pot in its saucer", "adds": ["saucer", "pot"], "explodeDirection": [0, 0, 1], "explodeDistance": 40,
+      "text": "Stand the pot in the middle of the saucer.", "check": "The pot sits level on its three feet." }
+  ]
+}

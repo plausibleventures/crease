@@ -1,0 +1,62 @@
+name: Bug report
+description: Something in Crease doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Security problems (agent escaping its sandbox, prints starting without confirmation,
+        leaked keys) go through the private form instead: see SECURITY.md.
+        Please don't paste API keys, printer serial numbers or home-folder paths.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start from the "Box with a hinged lid" idea
+        2. Press Slice
+        3. ...
+  - type: input
+    id: version
+    attributes:
+      label: Crease version or commit
+      placeholder: 0.0.1 (desktop app) or a git commit
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How are you running it?
+      options:
+        - Desktop app (.dmg)
+        - From source, desktop (npm run dev:electron)
+        - From source, browser (npm run dev)
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: OS and tool versions
+      placeholder: macOS 15.4 (Apple silicon), OpenSCAD 2026.10.05, OrcaSlicer 2.4.2
+  - type: input
+    id: printer
+    attributes:
+      label: Printer (if it matters)
+      placeholder: Practice printer / Creality SPARKX i7 fw 1.1.5.10 / none
+  - type: input
+    id: designer
+    attributes:
+      label: Designer (if it matters)
+      placeholder: Claude Sonnet with an API key / Claude sign-in / none
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs
+      description: Screenshots, the error message, or the server log around the problem.

@@ -1,0 +1,31 @@
+{
+  "title": "Box with a hinged lid",
+  "summary": "A small box whose lid swings open on a pin made from a piece of 1.75 mm printer filament.",
+  "timeMinutes": 5,
+  "parts": [
+    { "id": "base", "qty": 1, "color": "white", "name": "Box" },
+    { "id": "lid", "qty": 1, "color": "blue", "name": "Lid" }
+  ],
+  "hardware": [
+    { "id": "pin", "type": "rod", "qty": 1, "size": "1.75x80", "name": "1.75 mm filament, 80 mm long", "material": "PLA filament",
+      "purchaseHint": "1.75 mm PLA filament", "notes": "Cut a straight piece from the spool; trim flush after fitting." }
+  ],
+  "tools": [ { "id": "cutters", "type": "pliers", "name": "Side cutters or scissors" } ],
+  "consumables": [],
+  "placements": [
+    { "part": "base", "translate": [0, 0, 0] },
+    { "part": "lid", "translate": [0, 0, 40] }
+  ],
+  "motions": [
+    { "id": "lid", "label": "Lid opens", "type": "rotate", "parts": ["lid"], "axis": [-1, 0, 0], "origin": [0, 64, 43.5],
+      "range": [0, 110], "rest": 0, "check": "Swings open to just past upright and closes flat; its hinge loops clear the back of the box." }
+  ],
+  "steps": [
+    { "n": 1, "title": "Put the lid on", "adds": ["base", "lid"], "explodeDirection": [0, 0, 1], "explodeDistance": 30,
+      "text": "Set the lid on the box so its two hinge loops sit either side of the box's middle loop.",
+      "check": "The three loops line up in a straight row." },
+    { "n": 2, "title": "Push in the hinge pin", "adds": ["pin"], "explodeDirection": [1, 0, 0], "explodeDistance": 60,
+      "text": "Push the filament through all three loops from the side, then trim it flush.",
+      "check": "The lid swings open and shut smoothly and the pin stays put.", "showMotion": "lid" }
+  ]
+}

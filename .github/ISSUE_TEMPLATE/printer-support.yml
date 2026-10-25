@@ -1,0 +1,48 @@
+name: Printer support request / report
+description: Ask for a printer to be supported, or report how Crease works with yours.
+labels: [printer-support]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Current support, capability by capability: docs/printer-support.md. A capability is marked "verified" only
+        after a real print, so reports from real printers are what moves it forward.
+
+        **Safety:** don't run experiments on a printer you can't watch. The probe below is read-only.
+  - type: input
+    id: model
+    attributes:
+      label: Printer make and model
+      placeholder: Creality K1C, Voron 2.4 350, Prusa MK4 ...
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware and how you send prints today
+      placeholder: Klipper + Moonraker + Mainsail / Creality OS 1.3.x / Bambu cloud / PrusaLink / USB stick
+    validations:
+      required: true
+  - type: checkboxes
+    id: tried
+    attributes:
+      label: What did you try in Crease?
+      options:
+        - label: Picked it in Machines > Add a printer and sliced a part
+        - label: Saved a print file and printed it from the printer
+        - label: Sent a print from Crease and watched it finish
+        - label: Multicolour / material slots (AMS, CFS, MMU)
+        - label: Camera
+  - type: textarea
+    id: result
+    attributes:
+      label: What worked and what didn't
+      description: Photos of the print help (first layer, finished part).
+  - type: textarea
+    id: probe
+    attributes:
+      label: Read-only probe output (optional)
+      description: |
+        From a source checkout: `npx tsx tools/probe-printer.ts <printer-ip>`. It only reads status.
+        Remove serial numbers, hostnames and IP addresses before pasting.
+      render: markdown

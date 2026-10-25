@@ -1,0 +1,12 @@
+{
+  "id": "plant-pot",
+  "title": "Plant pot with saucer",
+  "blurb": "A ribbed pot with drainage holes and a matching saucer.",
+  "tags": [
+    "home",
+    "garden"
+  ],
+  "primaryPart": "pot",
+  "order": 5,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

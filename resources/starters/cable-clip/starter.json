@@ -1,0 +1,12 @@
+{
+  "id": "cable-clip",
+  "title": "Cable clip",
+  "blurb": "Keeps up to six cables tidy under a desk. Stick it on or screw it.",
+  "tags": [
+    "desk",
+    "cables"
+  ],
+  "primaryPart": "clip",
+  "order": 2,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

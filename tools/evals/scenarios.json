@@ -1,0 +1,266 @@
+{
+  "$comment": "Naive beginner prompts + a simulated persona. answer: recommended | decide | preference | dontknow. preference: {match: regex on question/header, answer: text}. review: list of replies to successive 'How does this look?' questions (then 'Looks great'). stated: facts the user already gave (regexes); asking about them again is flagged. expect: what a good result should have. photo: an OpenSCAD scene (tools/evals/photos) rendered top-down orthographic to PNG and attached to the first message. expect.measure: a Customizer parameter whose name matches `param` must be within ±tolerance of `truth` (mm). machines: Machines to create before the scenario (POST /api/machines; \"target\": true makes it the default = the new project's target; \"$MOCK_PORT\" = the worker's mock printer). expect.recommendMachine: the agent must recommend switching to this machine (a question option or slicing/printing with its id). expect.quality: the print should be sliced with this intent, have no starts_mid_air issue in its last preview, and be previewed (preview_slice) after its last slice.",
+  "scenarios": [
+    {
+      "id": "phone-stand",
+      "prompt": "make me a phone stand",
+      "persona": "A 70-year-old who video-calls the grandkids. Not technical.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [],
+      "expect": {
+        "moving": false
+      }
+    },
+    {
+      "id": "keys-mail",
+      "prompt": "make me something to hold my keys and mail",
+      "persona": "Busy parent, wants it done.",
+      "answer": "decide",
+      "review": [],
+      "stated": [
+        "\\bkeys?\\b.*\\bmail\\b|\\bmail\\b.*\\bkeys?\\b"
+      ],
+      "expect": {
+        "mustCover": [
+          "key",
+          "mail"
+        ]
+      }
+    },
+    {
+      "id": "toolbox-latch",
+      "prompt": "make me a little toolbox with a lid that latches",
+      "persona": "12-year-old who likes building things.",
+      "answer": "recommended",
+      "review": [
+        "Can the handle be a bit bigger so it's easier to carry?"
+      ],
+      "stated": [
+        "\\blid\\b",
+        "\\blatch"
+      ],
+      "expect": {
+        "moving": true
+      }
+    },
+    {
+      "id": "gift-mom",
+      "prompt": "make me a gift for my mom",
+      "persona": "Teenager, no idea what they want.",
+      "answer": "dontknow",
+      "review": [],
+      "stated": [],
+      "expect": {}
+    },
+    {
+      "id": "pipe-bracket",
+      "prompt": "I need a bracket to hold a 25mm pipe to a wall, 2 screws, PETG",
+      "persona": "Practical DIYer who already knows what they want.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [
+        "25\\s*mm|pipe (size|diameter)|how (big|wide|thick) is the pipe",
+        "how many screws|number of screws|\\bscrews?\\b.*\\?",
+        "PETG|material|filament type",
+        "\\bwall\\b"
+      ],
+      "expect": {
+        "maxQuestionRounds": 1
+      }
+    },
+    {
+      "id": "cable-organiser",
+      "prompt": "make me a cable organiser for my desk",
+      "persona": "Office worker, likes things tidy.",
+      "answer": "preference",
+      "preference": {
+        "match": "colou?r",
+        "answer": "Dark grey, to match my desk"
+      },
+      "review": [
+        "Looks good but can it hold 5 cables instead?"
+      ],
+      "stated": [
+        "\\bdesk\\b"
+      ],
+      "expect": {}
+    },
+    {
+      "id": "rocket-piece",
+      "prompt": "make me a board game piece that looks like a rocket",
+      "persona": "9-year-old making their own board game.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [
+        "rocket"
+      ],
+      "expect": {
+        "smallParts": true
+      }
+    },
+    {
+      "id": "headphone-spin",
+      "prompt": "make me a stand for my headphones that spins",
+      "persona": "Gamer, wants it to look cool.",
+      "answer": "decide",
+      "review": [],
+      "stated": [
+        "\\bspin|rotat"
+      ],
+      "expect": {
+        "moving": true
+      }
+    },
+    {
+      "id": "photo-pipe",
+      "prompt": "make me a clip to hold this pipe against the wall. The card in the photo is a normal credit card.",
+      "photo": "photos/pipe.scad",
+      "persona": "Homeowner who doesn't own calipers.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [],
+      "expect": {
+        "measure": {
+          "param": "pipe|diam|dia|\\bd\\b",
+          "truth": 32,
+          "tolerance": 0.1
+        }
+      }
+    },
+    {
+      "id": "photo-shelf",
+      "prompt": "make me a hook that clips onto the front edge of this shelf so I can hang my headphones. The card is a regular credit card.",
+      "photo": "photos/shelf.scad",
+      "persona": "Student with a small desk shelf.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [
+        "headphone"
+      ],
+      "expect": {
+        "measure": {
+          "param": "shelf|thick|board|gap",
+          "truth": 18,
+          "tolerance": 0.1
+        }
+      }
+    },
+    {
+      "id": "two-machines",
+      "prompt": "make me a door sign that says MAX in red, white and blue",
+      "persona": "Parent making a sign for their kid's room. Has two printers.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [
+        "\\b(red|white|blue)\\b.*colou?r|which colou?rs"
+      ],
+      "machines": [
+        {
+          "name": "Mini",
+          "model": "Small single-colour printer",
+          "slicerProfile": "sparkx-i7",
+          "buildVolumeMm": [
+            180,
+            180,
+            180
+          ],
+          "nozzleMm": 0.4,
+          "maxNozzleC": 260,
+          "filamentSlots": 1,
+          "filaments": [
+            {
+              "slot": 1,
+              "colorName": "White",
+              "colorHex": "#f5f5f5",
+              "material": "PLA",
+              "loaded": true
+            }
+          ],
+          "filamentsConfirmed": true,
+          "tolerances": {
+            "slidingFitMm": null,
+            "pressFitMm": null,
+            "holeCompensationMm": null
+          },
+          "connection": {
+            "type": "none"
+          },
+          "enabled": true,
+          "target": true
+        },
+        {
+          "name": "Garage i7",
+          "model": "Creality SPARKX i7",
+          "slicerProfile": "sparkx-i7",
+          "buildVolumeMm": [
+            260,
+            260,
+            255
+          ],
+          "nozzleMm": 0.4,
+          "maxNozzleC": 300,
+          "filamentSlots": 4,
+          "filaments": [
+            {
+              "slot": 1,
+              "colorName": "White",
+              "colorHex": "#f5f5f5",
+              "material": "PLA",
+              "loaded": true
+            },
+            {
+              "slot": 2,
+              "colorName": "Black",
+              "colorHex": "#1a1a1a",
+              "material": "PLA",
+              "loaded": true
+            },
+            {
+              "slot": 3,
+              "colorName": "Red",
+              "colorHex": "#d32f2f",
+              "material": "PLA",
+              "loaded": true
+            },
+            {
+              "slot": 4,
+              "colorName": "Blue",
+              "colorHex": "#1e5bd8",
+              "material": "PLA",
+              "loaded": true
+            }
+          ],
+          "filamentsConfirmed": true,
+          "tolerances": {
+            "slidingFitMm": null,
+            "pressFitMm": null,
+            "holeCompensationMm": null
+          },
+          "connection": {
+            "type": "moonraker",
+            "host": "127.0.0.1",
+            "port": "$MOCK_PORT"
+          },
+          "enabled": true
+        }
+      ],
+      "expect": {
+        "recommendMachine": "i7"
+      }
+    },
+    {
+      "id": "apple-logo",
+      "prompt": "make me an Apple logo I can put on my desk",
+      "persona": "Design student who wants a clean-looking desk ornament.",
+      "answer": "recommended",
+      "review": [],
+      "stated": [],
+      "expect": {
+        "quality": {
+          "intent": "display"
+        }
+      }
+    }
+  ]
+}

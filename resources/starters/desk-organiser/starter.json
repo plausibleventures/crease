@@ -1,0 +1,12 @@
+{
+  "id": "desk-organiser",
+  "title": "Desk organiser",
+  "blurb": "A tray with compartments and a tall pen cup.",
+  "tags": [
+    "desk",
+    "storage"
+  ],
+  "primaryPart": "organiser",
+  "order": 7,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

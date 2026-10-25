@@ -1,0 +1,52 @@
+name: Design quality report
+description: The designer made something that doesn't fit, prints badly, or isn't what you asked for.
+labels: [design-quality]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These reports are how the designer's skills and checks get better. Bad results are useful: please include
+        the failure, not just the fix.
+  - type: textarea
+    id: asked
+    attributes:
+      label: What did you ask for?
+      description: Your first message, and any answers to the designer's questions that mattered.
+    validations:
+      required: true
+  - type: textarea
+    id: got
+    attributes:
+      label: What went wrong?
+      description: Doesn't fit, too weak, failed to print, wrong size, ignored a request, guide steps wrong, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: when
+    attributes:
+      label: When did you notice?
+      options:
+        - In the app (renders, checks or slicing preview)
+        - While printing
+        - After printing / while assembling
+    validations:
+      required: true
+  - type: input
+    id: designer
+    attributes:
+      label: Designer and model
+      placeholder: Claude Sonnet / Opus / Haiku, or another runtime
+    validations:
+      required: true
+  - type: input
+    id: printer
+    attributes:
+      label: Printer, material and print setting
+      placeholder: SPARKX i7, PLA, "Strong"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Photos, screenshots, build pack
+      description: |
+        Photos of the print and screenshots help most. If you can share the design, attach the exported build pack
+        (project menu > Export build pack). It leaves out chat transcripts, keys and folder paths.

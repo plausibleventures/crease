@@ -1,0 +1,193 @@
+---
+name: print-in-place
+description: "Designing, modeling, and analyzing any print-in-place mechanism: ball-and-socket joints, hinges, snap fits, peg-in-slot, articulated chains, living hinges, or any geometry where two parts should move relative to each other after coming off the print bed."
+---
+
+## Crease notes (read first)
+
+- Upstream ships this as a shim pointing at `docs/design/print-in-place.md`; that document is inlined below.
+- A print-in-place mechanism is ONE printable part in Crease terms: all moving bodies live in the same
+  `parts/<id>.scad` and are printed together. Put every gap value (articulating gap, axial gap, rod-hole gap,
+  collar radius) at the top as Customizer parameters so they can be tuned after a test print.
+- Disjoint bodies are expected here; if `check_part` warns about multiple shells, that is intended — but every
+  body must still be manifold and the gaps must survive the render (no coincident faces; see Mistake 4).
+- Verify with `render_part` (inspect a cut-away view, e.g. `difference()` a half-space in a temporary preview) and
+  `check_part`. Do not run Blender tools; the upstream `blender_check_*` tools do not exist here.
+- Printer: Creality SPARKX i7, 0.4 mm nozzle. Start with the 0.3 mm articulating gap below; the printer profile's
+  measured tolerances override these defaults. The existing `printable-openscad` sliding-fit default (0.2 mm/side)
+  is for assembled parts, not for parts printed captive.
+- Snap fits: use the `snap-fits` skill (the upstream snap-fit subsection was removed — see SOURCE.md).
+- Living-hinge orientation: the hinge must be printed lying flat on the bed (hinge axis horizontal, in the XY
+  plane) so the thin web is made of continuous extrusion lines running ACROSS the hinge line. Never print a living
+  hinge standing up, where the bend would open a layer interface.
+
+# Print-in-Place Design for FDM
+
+Backend-agnostic design rules for any FDM-printed mechanism with parts that move relative to each other after coming off the bed: ball-and-socket joints, hinges, snap fits, peg-in-slot, articulated chains, living hinges.
+
+## The Cardinal Rule
+
+**Every moving part must have a continuous, uninterrupted print path from the build plate to itself — and that path must NOT pass through the static part it moves against.**
+
+If the moving part has no way to get from the bed to itself without touching the static part, it cannot be printed. It will either fuse to the static part (too close) or collapse mid-print (no support).
+
+```
+WRONG — ball floating in socket:           RIGHT — ball on rod through socket:
+
+    ┌──────┐                                   ┌──────┐
+    │      │  ← socket                         │  ()  │  ← ball, inside socket
+    │  ()  │  ← ball (no path to bed!)         │  ||  │  ← rod, through bottom
+    │      │                                   │  ||  │
+    └──────┘                                   └──┤├──┘
+       ╳                                          ──    ← build plate
+                                                  ✓
+```
+
+---
+
+## LLM Failure Modes — Read These First
+
+The most common mistakes when designing print-in-place geometry:
+
+### Mistake 1: The Floating Trapped Part
+Building a closed container (socket, box, cage) around a moving part without giving the inner part a route to the bed. The inner part has no support during printing.
+
+**Fix:** Give the inner part a stem, rod, or tab that exits through a hole in the outer part and reaches the bed.
+
+### Mistake 2: Uniform Clearance Everywhere
+Applying 0.3mm clearance uniformly — including between the moving part's bottom and the socket floor. The moving part prints on thin air above a 0.3mm gap. Nothing bridges that gap.
+
+**Fix:** 0mm gap where the moving part needs support (resting surface during print), 0.3mm gap on all articulating surfaces (sides, top).
+
+### Mistake 3: Forgetting the Support Geometry is Part of the Design
+Adding a rod or stem as an afterthought that you plan to cut off. That rod IS the design. Plan its diameter, clearance through the socket hole, and whether it stays in the final piece from the start.
+
+### Mistake 4: Coplanar Faces Between Parts
+Two surfaces of different parts that are exactly flush. FDM printers will fuse coplanar surfaces. Always add a gap. 0.3mm minimum. If two faces must be at the same Z height, offset one by at least 0.3mm.
+
+### Mistake 5: Checking Clearance Without Checking the Path
+Verifying ball-to-socket distance is 0.3mm and calling it done. Clearance distance is necessary but not sufficient. Ask: "How does this part get from the bed to where it is?" If you can't trace an uninterrupted path, it won't print.
+
+---
+
+## Clearance Values (FDM, 0.4mm nozzle, PLA/PETG)
+
+| Gap type | Value | Notes |
+|---|---|---|
+| Minimum to prevent fusing | 0.15mm | Risky — printer-dependent |
+| Standard articulating gap | 0.3mm | Use this by default |
+| Conservative gap | 0.5mm | Use for first print of a new mechanism |
+| Axial gap (e.g. between knuckles) | 0.3mm per side | |
+| Radial gap (pin in bore) | 0.15mm per side = 0.3mm on diameter | |
+| Z gap between coplanar layers | 0.3mm | Never 0mm |
+
+### Known FDM Printer Behavior
+
+- **Gap ≤ 0.15mm:** Will almost certainly fuse. Don't design this.
+- **Gap 0.15–0.2mm:** May print-in-place with optimal settings. Use only for small detail features.
+- **Gap 0.2–0.3mm:** Print-in-place works on most printers with some post-print manipulation.
+- **Gap 0.3–0.5mm:** Reliable print-in-place on most FDM printers.
+- **Gap > 0.5mm:** Reliable but may feel loose depending on mechanism.
+- **Touching surfaces:** WILL FUSE. Even nominally 0mm gap surfaces fuse due to first-layer squish.
+- **Bridging over gaps:** FDM can bridge ~50mm horizontally with good settings. Vertical bridging works for gaps up to ~2mm with supports; 0.3mm vertical gap is a 1–2 layer bridge — marginal, works on good printers.
+
+---
+
+## Mechanism Patterns
+
+### 1. Ball-and-Socket Joint
+
+The ball must be part of a larger piece that prints on the bed. The socket prints around it.
+
+**Correct design:**
+```
+Ball + rod = one printed piece
+Socket = separate printed piece
+
+Print orientation (flat bottom on bed):
+- Socket flat bottom on bed
+- Rod passes through hole in socket bottom, also sits on bed
+- Ball is at top of rod, inside socket
+- Clearance: 0.3mm between ball and socket cavity (all sides)
+- Rod-to-hole clearance: 0.3mm per side (rod_r = hole_r - 0.3)
+- Retention: socket collar smaller than ball (collar_r < ball_r)
+
+Key dimensions (example):
+  ball_r = 8mm
+  cavity_r = ball_r + 0.3 = 8.3mm
+  collar_r = ball_r - 1.5 = 6.5mm  (retains ball, allows ±30–40° movement)
+  rod_r = 2.5mm
+  rod_hole_r = rod_r + 0.3 = 2.8mm
+```
+
+**After printing:** Rock ball+rod back and forth to break any thin fused bridges. The clearance gap should free up with light manipulation.
+
+### 2. Pin-Through-Barrel Hinge
+
+```
+Barrel (part of leaf A) prints with pin already inside it.
+Pin = separate piece, sits on bed.
+
+Print orientation: hinge axis horizontal, pin ends on bed
+
+  Leaf A ┤├ Leaf B
+         |
+         pin (end sits on bed)
+
+Clearances:
+  barrel_bore_r = pin_r + 0.15  (0.15mm radial = 0.3mm on diameter)
+  axial_gap = 0.3mm between knuckles
+
+Critical: pin must have a FLAT END that sits on the bed.
+A rounded pin end gives too small a contact patch.
+```
+
+Both leaf plates MUST be coplanar (same Z) when the hinge is in the open position.
+
+### 3. Peg-in-Socket (Articulated Chain)
+
+- Peg prints on bed as part of one segment
+- Socket bore in adjacent segment prints around the peg
+- Step/shelf height difference prevents coplanar fusion
+
+### 4. Living Hinge (Single-Piece Flex)
+
+No trapped parts. The hinge IS the thin section.
+
+```
+Minimum thickness for FDM living hinge:
+  PETG: 0.4–0.6mm (2 perimeters at 0.2mm layer height)
+  PLA:  0.6–0.8mm (PLA is brittle — thicker helps)
+  TPU:  1.0–1.5mm (much more forgiving)
+
+Print the hinge lying flat (hinge axis in the XY plane) so the web is formed by
+continuous extrusion lines running across the hinge line. [Crease: upstream
+wording "hinge axis perpendicular to layer lines" was ambiguous; clarified.]
+```
+
+### 5. Snap Fit
+
+See the `snap-fits` skill for beam sizing, strain limits and orientation. Print-in-place-specific rule kept
+from upstream: snap-tab barbs must be **wedge-shaped** (45° ramp), not rectangular blocks — rectangular = 90°
+overhang and fails to print. The same applies to the groove ceiling on the receiving part.
+
+---
+
+## Validation Checklist
+
+Before finalizing any print-in-place design:
+
+1. **Trace the print path:** Starting from the build plate, can you reach every part of the moving piece without passing through the static piece? If no → redesign.
+2. **Check all gaps:** Every surface pair between moving and static parts has ≥ 0.3mm clearance. Including at the bottom where the moving part is supported. [Crease: this means between moving and static parts; the moving part's own print path to the bed (rod/stem foot) sits directly on the bed with no gap — see Mistake 2.]
+3. **Verify retention:** The collar/barb/cap that retains the moving part is smaller than the moving part's widest point.
+4. **Check articulation range:** Does the joint have the intended range of motion? Does any geometry collide at the limits of travel?
+5. **Verify no coplanar faces:** No two surfaces from different parts sit at exactly the same Z height.
+6. **Print orientation:** Which face goes on the bed? Does that orientation create overhangs that need supports? (Supports inside joints will fuse — avoid them.)
+
+---
+
+## Worked recipes
+
+Validated parameter sets are not provided upstream yet. Derive parameters from the clearance + retention rules
+above, expose them as Customizer parameters, and verify with `render_part` (cut-away view) + `check_part` before
+slicing. Recommend a small test coupon of the joint before a long print.

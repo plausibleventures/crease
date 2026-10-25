@@ -1,0 +1,12 @@
+{
+  "id": "box-with-lid",
+  "title": "Box with a hinged lid",
+  "blurb": "A small box whose lid swings open on a pin made from printer filament.",
+  "tags": [
+    "storage",
+    "moving parts"
+  ],
+  "primaryPart": "base",
+  "order": 4,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

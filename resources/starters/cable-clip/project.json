@@ -1,0 +1,17 @@
+{
+  "name": "Cable clip",
+  "tags": [
+    "desk",
+    "cables"
+  ],
+  "parts": [
+    {
+      "id": "clip",
+      "file": "parts/clip.scad",
+      "qty": 1,
+      "colors": [
+        "white"
+      ]
+    }
+  ]
+}

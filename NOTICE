@@ -1,0 +1,20 @@
+Crease
+Copyright 2026 Aniruddh Chandratre
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes third-party components under their own licences; see THIRD_PARTY_NOTICES.txt and
+docs/licenses/INVENTORY.md. In particular:
+
+- resources/slicer-profiles/ contains printer, process and filament profiles derived from OrcaSlicer's bundled
+  presets. They are licensed under the GNU Affero General Public License v3.0, not Apache-2.0: see
+  resources/slicer-profiles/SOURCE.md and resources/slicer-profiles/LICENSE-AGPL-3.0.txt.
+- server/agent/skills/ contains agent skills vendored from other projects under the MIT and Apache-2.0 licences,
+  each with its LICENSE and a SOURCE.md recording its origin and our changes. The Apache-2.0 skills (enclosures,
+  fdm-design-rules, fits-and-clearances, snap-fits) come from AgentCAD (https://github.com/n3r/AgentCAD) and were
+  modified for Crease.
+- resources/openscad-libraries/BOSL2/ is BOSL2 (BSD-2-Clause).
+
+Crease runs, but does not include, Claude Code (Anthropic's proprietary software, installed by the user),
+OpenSCAD (GPL) and OrcaSlicer (AGPL). The Claude Agent SDK JavaScript library that the app loads is Anthropic's
+proprietary software, used under Anthropic's terms; it is not covered by this licence.

@@ -1,0 +1,12 @@
+{
+  "id": "wall-hook",
+  "title": "Wall hook",
+  "blurb": "A strong hook for bags, keys or headphones, with countersunk screw holes.",
+  "tags": [
+    "home",
+    "wall"
+  ],
+  "primaryPart": "hook",
+  "order": 3,
+  "firstMessage": "Make it yours: tell me what to change (size, colour, text\u2026)."
+}

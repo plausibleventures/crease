@@ -1,0 +1,427 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource/geist/400.css";
+@import "@fontsource/geist/500.css";
+@import "@fontsource/geist/600.css";
+@import "@fontsource/geist/700.css";
+@import "@fontsource/geist/400-italic.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+@import "./glass.css";
+
+/*
+ * Crease design tokens: "Workshop" (see the living style board at /#/style).
+ * A calm workshop in warm stone. The user's work is the colour: parts draw in filament tones on a full-bleed stage,
+ * the interface stays stone-neutral, and glass is only for controls that float over the stage.
+ *   background  app floor, page content         surface-1 / sidebar  side strips, status bar
+ *   surface-2   cards, inputs, table bodies      surface-3            raised: hover, chips
+ *   popover     menus, dialogs                   stage                what the user's work sits on (3D viewer, part
+ *               pictures), one tone everywhere; stage-thumb for thumbnail-size part pictures
+ * Type: Geist for the interface (tabular figures, so numbers still line up); bold, tight page titles; Geist Mono only
+ *   for code, G-code, file paths and aligned technical numbers. `.ps-aside` is the quiet italic second line (a title's
+ *   one-line subtitle), used sparingly.
+ * Shape: pill buttons; 10 px inputs and small boxes, 12 px cards, 16-24 px floating panels and dialogs, 4-6 px chips.
+ * Colour: no brand accent. The one main action on a screen is the solid pill (white on dark, black on light); every
+ *   other colour means one thing:
+ *   mint (ok)  pass, printed, ready      amber (warn)  warning, heating       coral (err)  fail, stop
+ *   magenta (pin)  your pins and notes   lime (move)   moving parts
+ * Selected things get a foreground tint, not a solid fill. Shadcn's variable names are kept so primitives pick the
+ * system up; semantic extras (ok/warn/err/pin/move/info + surface tiers) are exposed to Tailwind as colours below.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* surfaces + text tiers */
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-faint: var(--faint);
+  --color-stage: var(--stage);
+  --color-stage-top: var(--stage-top);
+  --color-stage-thumb: var(--stage-thumb);
+
+  /* status palette (semantic) */
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+  --color-info: var(--info);
+  --color-pin: var(--pin);
+  --color-move: var(--move);
+
+  /* shape: chips 4-6 · inputs and small boxes 10 · cards 12 · panels and dialogs 16-24 · buttons are pills */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 28px;
+
+  --animate-ps-enter: ps-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-ps-blink: ps-blink 1s steps(1) infinite;
+}
+
+/*
+ * Type scale (R12 readability). Utilities read these variables, so the whole UI scales from here — no one-off px
+ * sizes in components. Two app sizes sit below Tailwind's: text-micro (keys, counters, chips) and text-caption (labels,
+ * secondary lines). One scale for everyone (no modes).
+ */
+@theme {
+  --text-micro: 12px;
+  --text-micro--line-height: 1.35;
+  --text-caption: 13px;
+  --text-caption--line-height: 1.4;
+  --text-xs: 14px;
+  --text-xs--line-height: 1.45;
+  --text-sm: 15px;
+  --text-sm--line-height: 1.45;
+  --text-base: 17px;
+  --text-base--line-height: 1.5;
+}
+
+/* Light set: warm off-white stone, near-black ink, a black pill for the main action. Text tones meet WCAG AA on every
+   light surface (numbers: background / surface-1 / surface-2 / surface-3). */
+:root {
+  --background: #fafaf9; /* stone-50 */
+  --foreground: #0c0a09; /* 18.9 / 18.1 / 16.9 / 15.7 */
+  --surface-1: #f5f5f4; /* stone-100 */
+  --surface-2: #efedeb;
+  --surface-3: #e7e5e4; /* stone-200 */
+  --card: #ffffff;
+  --card-foreground: #0c0a09;
+  --popover: #ffffff;
+  --popover-foreground: #0c0a09;
+  --primary: #1c1917; /* the solid pill: light text 16.7:1 */
+  --primary-foreground: #fafaf9;
+  --secondary: #e7e5e4;
+  --secondary-foreground: #0c0a09;
+  --muted: #efedeb;
+  --muted-foreground: #57534e; /* stone-600: 7.3 / 7.0 / 6.5 / 6.1 */
+  --faint: #6b645e; /* 5.6 / 5.3 / 5.0 / 4.6: faint text must still be readable */
+  --accent: #e7e5e4;
+  --accent-foreground: #0c0a09;
+  --destructive: #bf2a45;
+  --border: rgb(12 10 9 / 0.1);
+  --line: rgb(12 10 9 / 0.1);
+  --line-strong: rgb(12 10 9 / 0.18);
+  --input: rgb(12 10 9 / 0.16);
+  --ring: #57534e;
+  --ok: #087356; /* status text tones: each ≥4.6:1 on white and on surface-3 (WCAG AA) */
+  --warn: #7a5c00;
+  --err: #bf2a45;
+  --info: #44403c;
+  --pin: #b0188f;
+  --move: #4a7000;
+  --sidebar: #f5f5f4;
+  --sidebar-foreground: #0c0a09;
+  --sidebar-primary: #1c1917;
+  --sidebar-primary-foreground: #fafaf9;
+  --sidebar-accent: #e7e5e4;
+  --sidebar-accent-foreground: #0c0a09;
+  --sidebar-border: rgb(12 10 9 / 0.1);
+  --sidebar-ring: #57534e;
+  /* stage: what the user's work sits on (3D viewer, layer canvas, part pictures). A step darker than the floor, so
+     white parts stand off it; stage-top: the soft lift at the top of the viewers. */
+  --stage: #e7e5e4;
+  --stage-top: #f5f5f4;
+  --stage-thumb: #d6d3d1; /* stone-300: a step darker, so a white part still reads at thumbnail size */
+  --radius: 10px;
+
+  /* glass (src/glass.css): floating controls over the stage */
+  --glass-fill: rgb(250 250 249 / 0.74);
+  --glass-filter: blur(16px) saturate(1.4) brightness(1.08);
+  --glass-fill-ctl: rgb(250 250 249 / 0.72);
+  --glass-filter-ctl: blur(12px) saturate(1.3) brightness(1.06);
+  --glass-edge: rgb(12 10 9 / 0.09);
+  --glass-shadow: 0 10px 30px -14px rgb(12 10 9 / 0.28);
+  --glass-panel: #ffffff;
+  --glass-thumb: #1c1917;
+  --glass-thumb-ink: #fafaf9;
+  --glass-muted: #57534e;
+  --glass-faint: #625c57;
+  --filament-mix: 18%;
+}
+
+.dark {
+  /* warm stone near-black; contrast numbers (WCAG) are for text on background / surface-1 / surface-2 / surface-3 */
+  --background: #0c0a09; /* stone-950: the floor, page content */
+  --foreground: #f5f5f4; /* 18.1 / 17.4 / 16.0 / 13.9 */
+  --surface-1: #12100e; /* side strips, status bar */
+  --surface-2: #1c1917; /* stone-900: cards, inputs, table bodies */
+  --surface-3: #292524; /* stone-800: hover, chips */
+  --card: #1c1917;
+  --card-foreground: #f5f5f4;
+  --popover: #1c1917;
+  --popover-foreground: #f5f5f4;
+  --primary: #f5f5f4; /* the solid pill: dark text 18:1 */
+  --primary-foreground: #0c0a09;
+  --secondary: #292524;
+  --secondary-foreground: #f5f5f4;
+  --muted: #1c1917;
+  --muted-foreground: #a8a29e; /* stone-400: 7.8 / 7.5 / 6.9 / 6.0 */
+  --faint: #9a938e; /* 6.5 / 6.3 / 5.8 / 5.0: faint text must still be readable */
+  --accent: #292524;
+  --accent-foreground: #f5f5f4;
+  --destructive: #f07886;
+  --border: rgb(255 255 255 / 0.08);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --input: rgb(255 255 255 / 0.16);
+  --ring: #d6d3d1;
+  --ok: #48c9a0; /* 9.5 / 9.2 / 8.4 / 7.3 */
+  --warn: #e8b66a; /* 10.7 / 10.2 / 9.4 / 8.2 */
+  --err: #f07886; /* 7.3 / 7.0 / 6.4 / 5.6 */
+  --info: #d6d3d1;
+  --pin: #f77ee0; /* 8.5 / 8.2 / 7.5 / 6.5 */
+  --move: #b2e65a; /* 13.5 / 13.0 / 12.0 / 10.4 */
+  --sidebar: #12100e;
+  --sidebar-foreground: #f5f5f4;
+  --sidebar-primary: #f5f5f4;
+  --sidebar-primary-foreground: #0c0a09;
+  --sidebar-accent: #1c1917;
+  --sidebar-accent-foreground: #f5f5f4;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: #d6d3d1;
+  --stage: #141210; /* a step above the floor; parts in filament tones and the plate both stand off it */
+  --stage-top: #2a2522;
+  /* small part thumbnails sit on the plate's tone (src/lib/stage.ts): at 36 px a black part's outline is lost on the
+     stage, while coloured parts stand off either */
+  --stage-thumb: #34302d;
+
+  /* glass: bars and chips dim what is behind them (brightness) before a stone fill, so stone-400 text keeps 4.5:1
+     even over a white part. Measured worst case: header pill 4.9, chips 4.6. */
+  --glass-fill: rgb(12 10 9 / 0.6);
+  --glass-filter: blur(16px) saturate(1.5) brightness(0.45);
+  --glass-fill-ctl: rgb(28 25 23 / 0.6);
+  --glass-filter-ctl: blur(12px) saturate(1.5) brightness(0.4);
+  --glass-edge: rgb(255 255 255 / 0.12);
+  --glass-shadow: 0 16px 40px -18px rgb(0 0 0 / 0.8);
+  --glass-panel: #1c1917;
+  --glass-thumb: #f5f5f4;
+  --glass-thumb-ink: #0c0a09;
+  --glass-muted: #a8a29e;
+  --glass-faint: #9a938e;
+  --filament-mix: 30%;
+}
+
+/* Native controls and scrollbars follow the theme; the page behind the app (overscroll) too. index.html paints dark
+   until this loads (dark is the default). Unlayered so it beats index.html's pre-paint style. */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+html,
+body {
+  background: var(--background);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  html {
+    @apply font-sans;
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  code,
+  kbd,
+  pre,
+  .font-mono {
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+  /* page titles: bold and tight; dialog titles a step lighter */
+  .ps-title {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  [data-slot="dialog-title"] {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--foreground) 22%, transparent);
+  }
+  /* A bordered box (the "border" class on all four sides) gets the control radius unless it says otherwise: cards,
+     notes, chips and overlays built from plain divs pick up the shape without a class on each. A plain attribute
+     selector (not :where) so it also beats preflight's `button, input, textarea { border-radius: 0 }`; it sits in the
+     base layer, so any rounded-* utility still wins. */
+  [class~="border"],
+  [class~="border-2"] {
+    border-radius: var(--radius-md);
+  }
+  /* Buttons default to the control radius too (preflight squares them), so a hover background or a focus ring is
+     never a sharp box. Rows that sit flush in a list or panel say rounded-none. The Button primitive is a pill. */
+  button,
+  [role="button"],
+  summary {
+    border-radius: var(--radius-md);
+  }
+  [data-slot="button"],
+  input[type="search"] {
+    border-radius: 9999px;
+  }
+  /* thin scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}
+
+/* ---------- shared bits of the Workshop look ---------- */
+@layer components {
+  /* the 3D viewers' backdrop: the stage tone with a soft lift at the top (part pictures use flat bg-stage) */
+  .ps-stage {
+    background-color: var(--stage);
+    background-image: linear-gradient(180deg, var(--stage-top) 0%, var(--stage) 70%);
+  }
+  /* a small section heading: plain words, no "›" glyph (that read as a control, R2-DISC-01) */
+  .ps-label {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted-foreground);
+    letter-spacing: 0;
+  }
+  /* the quiet second line under a title: italic, muted, regular weight. Sparingly: one per screen at most. */
+  .ps-aside {
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--muted-foreground);
+  }
+  /* segmented progress bar (width via --p: 0..100%) */
+  .ps-seg {
+    position: relative;
+    height: 8px;
+    border-radius: 9999px;
+    overflow: hidden;
+    background: repeating-linear-gradient(90deg, var(--surface-3) 0 5px, transparent 5px 7px);
+  }
+  .ps-seg > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--p, 0%);
+    background: repeating-linear-gradient(90deg, var(--c, var(--foreground)) 0 5px, transparent 5px 7px);
+    transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  /* blinking cursor */
+  .ps-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    background: var(--foreground);
+    vertical-align: -2px;
+    animation: ps-blink 1s steps(1) infinite;
+  }
+  /* render-complete reveal: a light edge sweeps across what just changed */
+  .ps-reveal {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .ps-reveal::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: var(--foreground);
+    box-shadow: 0 0 14px var(--foreground);
+    animation: ps-sweep 650ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .ps-enter {
+    animation: ps-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .ps-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: currentColor;
+    display: inline-block;
+    animation: ps-pulse 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  }
+}
+
+@keyframes ps-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes ps-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes ps-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes ps-sweep {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+.ps-blink-svg { animation: ps-blink 1s steps(1) infinite; }

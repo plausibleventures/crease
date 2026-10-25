@@ -1,0 +1,11 @@
+{
+  "id": "fit-test",
+  "title": "Fit test",
+  "blurb": "Prints a small test piece so Crease learns how tight your printer's fits are.",
+  "tags": [
+    "calibration"
+  ],
+  "primaryPart": "coupon",
+  "order": 8,
+  "firstMessage": "Print both parts, then open Settings \u2192 Fit test to tell me which holes fit."
+}
