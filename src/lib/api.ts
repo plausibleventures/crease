@@ -502,6 +502,7 @@ export const api = {
   // settings
   getSettings: () => request<Settings>("GET", "/api/settings"),
   putSettings: (s: Partial<Settings>) => request<Settings>("PUT", "/api/settings", s),
+  telemetryOnboarding: (skipped: boolean) => request<{ ok: boolean }>("POST", "/api/telemetry/onboarding", { skipped }),
   // secrets (write-only values; responses are masked status)
   listSecrets: () => request<{ store: SecretStoreInfo; secrets: Record<SecretRef, SecretStatus> }>("GET", "/api/secrets"),
   setSecret: (ref: SecretRef, value: string) => request<SecretStatus>("PUT", `/api/secrets/${enc(ref)}`, { value }),

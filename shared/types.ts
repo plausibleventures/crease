@@ -506,6 +506,8 @@ export interface Settings {
   auth?: SettingsAuth
   /** R11d: Codex runtime options (which Codex sign-in; the runtime itself is chosen by the agent profile). */
   codex?: CodexRuntimeSettings
+  /** Anonymous usage reports (server/telemetry.ts): true = yes, false = no, unset/null = not asked yet (= off). */
+  telemetry?: boolean | null
 }
 
 export type Units = "mm" | "in"

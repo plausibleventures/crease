@@ -137,6 +137,27 @@ Other ways to notarize, instead of `APPLE_KEYCHAIN_PROFILE`: `APPLE_ID` + `APPLE
 `APPLE_API_ISSUER`). A .p12 certificate works too (`CSC_LINK` + `CSC_KEY_PASSWORD`, for CI). The bundle id is
 `ventures.plausible.crease` (override with `CREASE_APP_ID` for your own builds); released builds must never change it. Details: [electron-builder.config.cjs](electron-builder.config.cjs).
 
+## Privacy
+
+Crease keeps your designs, prompts and files on your Mac. It can send anonymous usage reports, but only if you say
+yes (setup asks once; change it any time in Settings > Usage reports). Until then nothing is sent.
+
+A report says which features you use and whether they worked, never what you made:
+
+- App opened: app version, OS, chip type
+- Setup finished or skipped
+- Each design request: designer (Claude, Codex, …), model family, done/failed/stopped, a rough time
+- Designer errors: the kind only (failed, budget, sign-in)
+- Renders and checks: worked or not, a rough time, an issue count
+- Slices: worked or not, one colour or more
+- Prints: approved or not, practice or real printer, how it ended, your rating
+- New projects and build pack exports: a count
+
+Never sent: your designs, prompts or chat, file or project names, paths, error messages, printer addresses, keys or
+costs. Reports go to Google Analytics with a random install ID (in `telemetry.json` in your data folder; saying no
+deletes it). The exact list is `SCHEMA` in [server/telemetry.ts](server/telemetry.ts). `CREASE_TELEMETRY=0` turns
+reports off whatever the setting says.
+
 ## Contributing
 
 Bug reports, printer reports and design-quality reports are very welcome; see [CONTRIBUTING.md](CONTRIBUTING.md)

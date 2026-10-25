@@ -7,6 +7,7 @@ import { ANTHROPIC_API_KEY_REF, secretStatus, secretStoreInfo } from "../secrets
 import { defaultProfile, updateProfile } from "../agent/profiles"
 import { emit } from "../events"
 import { aboutInfo } from "../about"
+import { setTelemetryConsent, track } from "../telemetry"
 import type { CodexRuntimeSettings, Settings, SettingsAuth } from "../../shared/types"
 
 const run = promisify(execFile)
@@ -32,6 +33,7 @@ export default async function settingsRoutes(app: FastifyInstance) {
     if ("anthropicApiKey" in body) throw httpErr(400, "API keys are set with PUT /api/secrets/anthropic.apiKey")
     delete body.auth // read-only
     if (body.units !== undefined && body.units !== "mm" && body.units !== "in") throw httpErr(400, 'units must be "mm" or "in"')
+    if (body.telemetry !== undefined && body.telemetry !== null && typeof body.telemetry !== "boolean") throw httpErr(400, "telemetry must be true, false or null")
     // R11d: which Codex sign-in, and whether the partly isolated one (the user's ~/.codex) may run
     if (body.codex !== undefined) {
       const c = body.codex as Record<string, unknown> | null
@@ -57,8 +59,14 @@ export default async function settingsRoutes(app: FastifyInstance) {
       }
     }
     const saved = withAuth(saveSettings(body))
+    if (body.telemetry !== undefined) setTelemetryConsent(saved.telemetry)
     if (body.codex !== undefined) emit({ type: "agent.profiles.changed" }) // Agents screens re-check readiness
     return saved
+  })
+  // First-run setup closed (skipped = before Done). Sent before onboardedAt is set, so only the first time counts.
+  app.post<{ Body: { skipped?: unknown } | undefined }>("/api/telemetry/onboarding", async (req) => {
+    if (!getSettings().onboardedAt) track("onboarding_done", { skipped: req.body?.skipped === true })
+    return { ok: true }
   })
   app.get("/api/about", async () => aboutInfo())
   app.post("/api/settings/test-openscad", async () => {

@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { listStarters, getMachineTolerances, openClaudeLogin, setMachineTolerances, setupFirstMachine, starterDir, systemChecks } from "../onboarding"
 import { createProjectFromStarter } from "../projects/store"
 import { renderPart, watchProject } from "../cad/index"
+import { track } from "../telemetry"
 
 // First-run setup + starter gallery. See shared/api.md "Onboarding".
 export default async function onboardingRoutes(app: FastifyInstance) {
@@ -36,6 +37,7 @@ export default async function onboardingRoutes(app: FastifyInstance) {
     const p = await createProjectFromStarter(d, req.body?.name)
     void watchProject(p.id)
     for (const part of p.parts) void renderPart(p.id, part.id).catch(() => {})
+    track("project_created", { from_starter: true })
     return p
   })
 }

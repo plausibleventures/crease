@@ -76,3 +76,12 @@ describe("GET /api/about", () => {
     expect(issueUrlOf("https://gitlab.com/me/printstudio")).toBeNull()
   })
 })
+
+describe("telemetry setting", () => {
+  it("is unset until answered, accepts true/false/null only", async () => {
+    expect((await app.inject({ method: "GET", url: "/api/settings" })).json().telemetry ?? null).toBeNull()
+    expect((await put({ telemetry: "yes" })).statusCode).toBe(400)
+    expect((await put({ telemetry: true })).json().telemetry).toBe(true)
+    expect((await put({ telemetry: false })).json().telemetry).toBe(false)
+  })
+})

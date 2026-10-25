@@ -40,6 +40,7 @@ import { dismissSharedNotes, isSharedFor, paramLinksAt, partOverridesAt, sharedN
 import { emit } from "../events"
 import { listIdeas, noteIdeaSession, renameIdea } from "../projects/ideas"
 import { compareIdeas } from "../projects/compare"
+import { track } from "../telemetry"
 
 const MIME: Record<string, string> = {
   ".png": "image/png",
@@ -61,6 +62,7 @@ export default async function projectsRoutes(app: FastifyInstance) {
   app.post<{ Body: { name?: string } }>("/api/projects", async (req) => {
     const p = await createProject(req.body?.name ?? "")
     void watchProject(p.id)
+    track("project_created", { from_starter: false })
     return p
   })
 

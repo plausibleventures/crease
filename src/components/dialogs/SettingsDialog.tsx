@@ -41,6 +41,7 @@ import { TOOLS, type ToolChecks } from "@/lib/diagnostics"
 import { profileHealth } from "@/components/agents/parts"
 import { useTheme } from "@/components/theme-provider"
 import { Segmented } from "@/components/ui/segmented"
+import { TelemetryChoice } from "@/components/telemetry"
 
 type TestState = { busy: boolean; ok?: boolean; msg?: string }
 
@@ -316,6 +317,12 @@ function SettingsBody({ setOpen }: { setOpen: (o: boolean) => void }) {
               <span onClickCapture={() => setOpen(false)}>
                 <FinishSetupButton />
               </span>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="usage">
+            <AccordionTrigger summary={s.telemetry ? "On" : "Off"}>Usage reports</AccordionTrigger>
+            <AccordionContent>
+              <TelemetryChoice checked={s.telemetry === true} onChange={(telemetry) => setS({ ...s, telemetry })} />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="about">

@@ -608,6 +608,13 @@ states assumed sizes in it first. The theme (light/dark/system) is a renderer pr
 - PUT    /api/settings  Partial<Settings> -> Settings   (`auth` is ignored; a legacy `anthropicApiKey` field -> 400,
          use the Secrets routes)
 - `claudePath` (optional): absolute path to the user's Claude Code (`~/` allowed); empty = automatic. Other values -> 400.
+- `telemetry` (optional): anonymous usage reports. true = yes, false = no, unset/null = not asked yet (off). Other
+  values -> 400. Yes creates a random install id in `<STUDIO_HOME>/telemetry.json`; no deletes it. What is sent (and
+  nothing else): server/telemetry.ts `SCHEMA`, batched to GA4 every 30 s and on close. Nothing is sent without
+  CREASE_TELEMETRY_SECRET, under tests, or with CREASE_TELEMETRY=0. Setup asks in Preferences; anyone onboarded
+  without an answer gets one small Yes / No thanks bar.
+- POST   /api/telemetry/onboarding {skipped: boolean} -> {ok}  (first-run setup closed; reported only while onboardedAt
+         is unset, so call it before setting onboardedAt)
 - `uiMode` is retired (U2: no Beginner/Maker modes; every screen is simple with in-place details). An old value in
   settings.json is ignored and dropped on the next save; a PUT carrying it is accepted and the field ignored.
 - POST   /api/settings/test-openscad -> {ok, version?, error?}

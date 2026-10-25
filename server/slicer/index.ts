@@ -20,6 +20,7 @@ import { mapPlateObjects, parseExcludeObjects, partOfObjectName, placeObjects, s
 import { createJob, latestSliceInputs, projectMachine, recordPartJob, recordPlateSet, setProjectIntent, sourceRevision } from "../jobs"
 import { orcaSlicerBin } from "../tools/index"
 import { clearSliceError, recordSliceError } from "./last-error"
+import { track } from "../telemetry"
 
 export { BUNDLED_PROFILES_DIR as PROFILES_DIR } from "./profiles"
 
@@ -1033,10 +1034,13 @@ async function noteSliceOutcome<T>(projectId: string, fn: () => Promise<T>): Pro
   try {
     const r = await fn()
     clearSliceError(projectId)
+    const slots = (r as { filamentBySlot?: unknown[] }).filamentBySlot
+    track("slice", { ok: true, multicolor: (slots?.length ?? 0) > 1 })
     return r
   } catch (e) {
     const status = (e as { statusCode?: number }).statusCode
     if (status !== 400 && status !== 404) {
+      track("slice", { ok: false })
       recordSliceError(projectId, (e as Error).message ?? String(e))
       emit({ type: "jobs.changed", projectId })
     }

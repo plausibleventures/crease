@@ -4,6 +4,7 @@ import { APP_SKILLS_DIR } from "../agent/prompt"
 import { exportPack, importPack, packPreview } from "../pack/index"
 import { httpError, updateProject } from "../projects/store"
 import { renderPart } from "../cad/index"
+import { track } from "../telemetry"
 
 // OWNER: build packs (R16). See shared/api.md "Build packs".
 const MAX_PACK_BYTES = 512 * 1024 * 1024
@@ -36,6 +37,7 @@ export default async function packRoutes(app: FastifyInstance) {
     if (opts.description !== undefined) patch.description = opts.description.trim()
     if (Object.keys(patch).length) await updateProject(req.params.id, patch)
     const { zip, filename } = await exportPack(req.params.id, opts)
+    track("build_pack_exported")
     return reply
       .header("content-type", "application/zip")
       .header("content-disposition", `attachment; filename="${filename}"`)

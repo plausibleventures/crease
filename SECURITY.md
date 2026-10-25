@@ -30,6 +30,8 @@ Only the latest `main` and the newest release are supported.
 - **Secrets**: API keys exposed through the settings API, logs, transcripts, events, build packs or crash output.
 - **The local API**: the server listens on 127.0.0.1 with a per-launch token in the desktop app; anything that lets a
   web page or another local user drive it.
+- **Usage reports** sending anything beyond the documented events and values (README "Privacy",
+  `server/telemetry.ts`), or sending anything before the user says yes or after they say no.
 - **Printer commands** that could cause unsafe motion or heating (for example, wrong bed size or temperatures sent
   without the preflight checks).
 

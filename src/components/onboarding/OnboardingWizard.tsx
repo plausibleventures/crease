@@ -34,6 +34,7 @@ import { saveUnits, useUnits } from "@/lib/units"
 import { cn } from "@/lib/utils"
 import { BrandMark } from "@/components/BrandMark"
 import { defaultMachine, useStudio } from "@/stores/studio"
+import { TelemetryChoice } from "@/components/telemetry"
 
 const LABELS = ["Welcome", "Designer", "Printer", "Preferences", "Done"] as const
 const LAST = SETUP_SCREENS.length - 1
@@ -52,7 +53,12 @@ export function OnboardingWizard() {
   const go = (n: number) => setOnboarding({ open: true, step: Math.max(0, Math.min(LAST, n)) })
   const close = () => {
     setOnboarding({ open: false, step: 0 })
-    void markOnboarded().then(() => useSetup.getState().refresh())
+    // the usage report (if they said yes) goes first: it counts only while onboardedAt is unset
+    void api
+      .telemetryOnboarding(step < LAST)
+      .catch(() => {})
+      .then(markOnboarded)
+      .then(() => useSetup.getState().refresh())
   }
   // "Finish setup": only the steps still left, then Done (R2-SET-01)
   const next = () => go(only ? (only.find((n) => n > step) ?? LAST) : step + 1)
@@ -461,6 +467,14 @@ function PreferencesStep({ onNext }: { onNext: () => void }) {
   const saved = useUnits()
   const [units, setUnits] = useState<Units>(saved.chosen ? saved.units : "mm")
   const { theme, setTheme } = useTheme()
+  // off until they tick it (Settings > Usage reports changes it later)
+  const [share, setShare] = useState(false)
+  useEffect(() => {
+    api
+      .getSettings()
+      .then((s) => setShare(s.telemetry === true))
+      .catch(() => {})
+  }, [])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const save = async () => {
@@ -468,6 +482,7 @@ function PreferencesStep({ onNext }: { onNext: () => void }) {
     setError(null)
     try {
       await saveUnits(units)
+      await api.putSettings({ telemetry: share })
       onNext()
     } catch (e) {
       setError(`Couldn't save: ${errMsg(e)}`)
@@ -500,6 +515,7 @@ function PreferencesStep({ onNext }: { onNext: () => void }) {
           ]}
         />
         <Choice label="Theme" value={theme} onChange={setTheme} options={THEMES} />
+        <TelemetryChoice checked={share} onChange={setShare} />
       </div>
       {error && <Note tone="err">{error}</Note>}
     </Screen>

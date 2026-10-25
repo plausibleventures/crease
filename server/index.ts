@@ -20,8 +20,11 @@ import outcomeRoutes from "./routes/outcomes"
 import packRoutes from "./routes/pack"
 import importRoutes from "./routes/imports"
 import fileRoutes from "./routes/files"
-import { setAppVersion, setPdfRenderer } from "./pack/index"
+import { appVersion, setAppVersion, setPdfRenderer } from "./pack/index"
 import { setTrashHandler } from "./projects/manage"
+import { startTelemetry } from "./telemetry"
+import { STUDIO_HOME, getSettings } from "./config"
+import { getMachine } from "./machines"
 import { configureSecretStore, migrateLegacySecrets, redactSecrets, type SecretCipher } from "./secrets"
 
 export interface StartServerOptions {
@@ -166,6 +169,22 @@ export async function startServer(opts: StartServerOptions = {}) {
 
   // Close agent sessions (and kill their CLI processes) when the server closes.
   app.addHook("onClose", async () => shutdownAgents())
+
+  // Usage reports: only with Settings.telemetry === true (server/telemetry.ts). The last batch goes out on close.
+  let consent: boolean | null | undefined = null
+  try {
+    consent = getSettings().telemetry
+  } catch {
+    /* unreadable settings: not asked */
+  }
+  const stopTelemetry = startTelemetry({
+    studioHome: STUDIO_HOME,
+    consent,
+    appVersion,
+    isPractice: (id) => !!getMachine(id).isPractice,
+    subscribe: (fn) => onEvent((e) => fn(e)),
+  })
+  app.addHook("onClose", async () => stopTelemetry())
 
   // Dev (browser): fixed port 5174 behind the Vite proxy, no token. Electron: port 0 + per-launch token.
   const address = await app.listen({ port: opts.port ?? Number(process.env.PORT ?? 5174), host: opts.host ?? "127.0.0.1" })

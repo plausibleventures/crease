@@ -15,6 +15,7 @@ import type {
 } from "../../shared/types"
 import { getPrint, listPrints, setPrintOutcome } from "../db"
 import { emit } from "../events"
+import { track } from "../telemetry"
 import { loadJob, noteOutcomeFailed } from "../jobs"
 import { getMachine } from "../machines"
 import { addLesson, removeLesson } from "../agent/lessons"
@@ -152,6 +153,7 @@ export function saveOutcome(printId: string, input: PrintOutcomeInput): PrintRec
     outcome.lesson = text ? { text, machineId, status: "proposed", line: null, decidedAt: null } : null
   }
   const next = persistOutcome(rec, outcome)
+  if (!prev) track("print_rated", { result: input.rating, issue: outcome.categories[0] ?? "none" }) // the first rating only
   if (input.rating === "failed" && rec.jobId) noteOutcomeFailed(rec.projectId, rec.jobId, rec.id)
   return next
 }

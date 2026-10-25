@@ -22,6 +22,7 @@ import { useStudio } from "@/stores/studio"
 import { installCommands } from "@/lib/commands"
 import { AppOverlays } from "@/components/CommandPalette"
 import { ProjectActionsHost } from "@/components/library/project-actions"
+import { TelemetryAsk } from "@/components/telemetry"
 
 export function App() {
   const route = useStudio((s) => s.route)
@@ -70,6 +71,7 @@ export function App() {
           )}
         </div>
         <FinishedPrintAsk />
+        <TelemetryAsk />
         <StatusBar />
       </div>
       <PrintConfirmDialog />
