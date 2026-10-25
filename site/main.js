@@ -10,6 +10,15 @@
     window.addEventListener("scroll", onScroll, { passive: true })
   }
 
+  // Analytics (Google Analytics, set up in index.html): which links people follow and which demos they open.
+  const track = (name, params) => { if (typeof window.gtag === "function") window.gtag("event", name, params) }
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href]")
+    if (!a) return
+    if (/\.dmg$/.test(a.href)) track("download_app", { link_id: a.id || a.textContent.trim().slice(0, 40) })
+    else if (/github\.com\/plausibleventures\/crease/.test(a.href)) track("view_source", { link_url: a.href })
+  })
+
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
   const canObserve = "IntersectionObserver" in window
 
@@ -65,6 +74,7 @@
       })
       if (focus) { tab.focus(); tab.scrollIntoView({ block: "nearest", inline: "nearest" }) }
       const n = tab.dataset.demo
+      track("view_demo", { demo: n })
       dv.poster = `assets/video/demos/${n}-poster.jpg`
       dv.src = `assets/video/demos/${n}.mp4`
       dv.setAttribute("aria-label", `${tab.textContent}: the designer at work in Crease`)

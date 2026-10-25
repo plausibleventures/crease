@@ -18,6 +18,17 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="styles.css">
   <script>document.documentElement.classList.add("js")</script>
+  <!-- Google Analytics 4. Consent Mode: no analytics cookies for visitors in the EEA, UK and Switzerland (cookieless
+       pings only); elsewhere it counts visits normally. Ads features are off everywhere. -->
+  <script>
+    window.dataLayer = window.dataLayer || []
+    function gtag(){dataLayer.push(arguments)}
+    gtag("consent", "default", { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: "granted" })
+    gtag("consent", "default", { analytics_storage: "denied", region: ["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IE","IT","LV","LI","LT","LU","MT","NL","NO","PL","PT","RO","SK","SI","ES","SE","GB","CH"] })
+    gtag("js", new Date())
+    gtag("config", "G-5Y4V38N5EC", { allow_google_signals: false })
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5Y4V38N5EC"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -379,7 +390,7 @@
     </div>
     <div class="wrap foot-small">
       <p>Apache 2.0. Not made or endorsed by Anthropic, OpenAI, xAI, Creality, OpenSCAD or OrcaSlicer.</p>
-      <p>Interface pictures and videos are the app itself.</p>
+      <p>Interface pictures and videos are the app itself. This site counts visits with Google Analytics (no ads, no cookies in the EU and UK).</p>
     </div>
   </footer>
 
