@@ -9,8 +9,10 @@ import { join } from "node:path"
 import type { ServerEvent } from "../shared/types"
 
 export const MEASUREMENT_ID = "G-G1M0RQN93G"
-// TODO: the release secret is filled in at build time (or in a later commit). Empty = nothing is ever sent.
-export const API_SECRET = process.env.CREASE_TELEMETRY_SECRET ?? ""
+// GA4 Measurement Protocol key for the "Crease app" stream. It ships inside every build, so it isn't a secret in
+// any real sense: it only lets a caller add events to that stream. CREASE_TELEMETRY_SECRET overrides it (forks:
+// point it at your own stream, or set CREASE_TELEMETRY=0 to turn reporting off).
+export const API_SECRET = process.env.CREASE_TELEMETRY_SECRET ?? "tOXKesH1SuyN7K_Xgfhagw"
 const ENDPOINT = "https://www.google-analytics.com/mp/collect"
 
 const FLUSH_MS = 30_000

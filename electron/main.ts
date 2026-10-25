@@ -208,13 +208,20 @@ app.on("window-all-closed", () => {
 // Agent CLI processes must not outlive the app: end sessions synchronously on quit, and on fatal errors.
 // (A SIGKILL'd app is covered by the per-session watchdog in server/agent/spawn.ts.)
 let shutdownAgents: (() => void) | null = null
-app.on("before-quit", () => {
+let serverClosed = false
+app.on("before-quit", (event) => {
   try {
     shutdownAgents?.()
   } catch (e) {
     console.error("[electron] agent shutdown failed", e)
   }
-  void closeServer?.()
+  if (serverClosed || !closeServer) return
+  // Close the server before quitting so its onClose hooks run (the last usage-report batch goes out); at most 3 s.
+  event.preventDefault()
+  serverClosed = true
+  void Promise.race([closeServer(), new Promise((r) => setTimeout(r, 3000))])
+    .catch(() => {})
+    .finally(() => app.quit())
 })
 for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"] as const) process.once(sig, () => app.quit())
 process.on("uncaughtException", (e) => {
